@@ -1,19 +1,36 @@
 import { Modal, Button, Form } from 'react-bootstrap';
+import { TodoItem } from '../model';
+import React, { useState } from 'react';
+import { Prev } from 'react-bootstrap/esm/PageItem';
 
 interface FormModalProps {
     show: boolean;
     onHide: () => void;
-    onInsertSuccess: () => void; // Callback to notify parent of successful insert
+    onInsert: (item:TodoItem) => void; // Callback to notify parent of successful insert
 }
 
-const InsertFormModal: React.FC<FormModalProps> = ({ show, onHide, onInsertSuccess }) => {
+const InsertFormModal: React.FC<FormModalProps> = ({ show, onHide, onInsert}) => {
+    const [formData, setFormData] = useState<TodoItem>({
+        id:0,
+        description:"",
+        tags: [],
+        deadline:""
+    })
     
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         // TODO: Handle form submission
-        onInsertSuccess();
+        onInsert(formData);
     };
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const {name,value} = event.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: name ==="tags" ? value.split(",").map(tag => tag.trim()) : value
+        }))
+    }
 
     return (
         <Modal show={show} onHide={onHide} centered backdrop="static">
@@ -29,6 +46,7 @@ const InsertFormModal: React.FC<FormModalProps> = ({ show, onHide, onInsertSucce
                             type="text"
                             placeholder="Describe your task"
                             required
+                            onChange={handleChange}
                         />
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="tags">
@@ -37,11 +55,12 @@ const InsertFormModal: React.FC<FormModalProps> = ({ show, onHide, onInsertSucce
                             name="tags"
                             type="text"
                             placeholder="tag1, tag2, tag3"
+                            onChange={handleChange}
                         />
                     </Form.Group>
                     <Form.Group className="mb-3" controlId="deadline">
                         <Form.Label>Deadline</Form.Label>
-                        <Form.Control name="deadline" type="date" />
+                        <Form.Control name="deadline" type="date"  onChange={handleChange}/>
                     </Form.Group>
                     <Button variant="secondary" type="submit">
                         Save
